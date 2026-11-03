@@ -1,0 +1,880 @@
+# <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocha Depósito | Materiais de Construção</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            black: '#1A1A1A',
+                            yellow: '#FFC107',
+                            gray: '#6D6D6D',
+                            light: '#F4F4F4',
+                            orange: '#FF6B00'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .product-card:hover { transform: translateY(-4px); }
+        /* Transições suaves */
+        * { transition: background-color 0.2s, border-color 0.2s, opacity 0.2s; }
+    </style>
+</head>
+<body class="bg-brand-light text-brand-black flex flex-col min-h-screen">
+
+    <!-- CABEÇALHO -->
+    <header class="bg-brand-black text-white sticky top-0 z-40 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <!-- Logo -->
+            <div class="flex items-center gap-2 cursor-pointer" onclick="showSection('store')">
+                <div class="bg-brand-yellow text-brand-black p-2 rounded-lg font-black text-xl flex items-center gap-1 shadow">
+                    <i data-lucide="hard-hat" class="w-6 h-6"></i>
+                    <span>ROCHA</span>
+                </div>
+                <div class="hidden sm:block text-xs uppercase tracking-wider text-gray-300 font-semibold leading-tight">
+                    Depósito &<br>Construção
+                </div>
+            </div>
+
+            <!-- Busca -->
+            <div class="flex-1 max-w-xl mx-2">
+                <div class="relative">
+                    <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar tomadas, lâmpadas, torneiras..." 
+                           class="w-full bg-white text-brand-black py-2 pl-4 pr-10 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow">
+                    <button class="absolute right-3 top-2.5 text-brand-gray">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="flex items-center gap-3">
+                <button onclick="toggleCartModal()" class="relative bg-brand-yellow text-brand-black px-3 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-yellow-400 transition shadow">
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                    <span class="hidden md:inline">Carrinho</span>
+                    <span id="cartCount" class="bg-brand-orange text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </button>
+
+                <button id="authBtn" onclick="openLoginModal()" class="border border-gray-600 hover:border-brand-yellow text-gray-300 hover:text-brand-yellow px-3 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
+                    <i data-lucide="user-check" class="w-4 h-4"></i>
+                    <span id="authBtnText" class="hidden sm:inline">Área Vendedor</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Barra de Categorias Rápida -->
+        <nav class="bg-neutral-900 border-t border-neutral-800 text-xs text-gray-300 overflow-x-auto">
+            <div class="max-w-7xl mx-auto px-4 flex gap-6 py-2">
+                <button onclick="setCategory('all')" class="hover:text-brand-yellow flex items-center gap-1 font-medium text-brand-yellow">
+                    <i data-lucide="layers" class="w-3.5 h-3.5"></i> Todos os Produtos
+                </button>
+                <button onclick="setCategory('Eletrica')" class="hover:text-brand-yellow flex items-center gap-1">
+                    <i data-lucide="zap" class="w-3.5 h-3.5"></i> Elétrica
+                </button>
+                <button onclick="setCategory('Hidraulica')" class="hover:text-brand-yellow flex items-center gap-1">
+                    <i data-lucide="droplet" class="w-3.5 h-3.5"></i> Hidráulica
+                </button>
+                <button onclick="setCategory('Iluminacao')" class="hover:text-brand-yellow flex items-center gap-1">
+                    <i data-lucide="lightbulb" class="w-3.5 h-3.5"></i> Iluminação
+                </button>
+                <button onclick="setCategory('Ferramentas')" class="hover:text-brand-yellow flex items-center gap-1">
+                    <i data-lucide="wrench" class="w-3.5 h-3.5"></i> Ferramentas
+                </button>
+                <button onclick="setCategory('Basico')" class="hover:text-brand-yellow flex items-center gap-1">
+                    <i data-lucide="hammer" class="w-3.5 h-3.5"></i> Material Básico
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- BANNER PROMOCIONAL -->
+    <div class="bg-brand-orange text-white py-2 px-4 text-center font-bold text-xs sm:text-sm shadow-inner flex items-center justify-center gap-2">
+        <i data-lucide="flame" class="w-4 h-4 animate-bounce"></i>
+        <span>OFERTAS ESPECIAIS DE MATERIAIS DE CONSTRUÇÃO COM ENTREGA RÁPIDA NA REGIÃO!</span>
+    </div>
+
+    <!-- NAVEGAÇÃO INTERNA ENTRE LOJA E PAINEL -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6">
+
+        <!-- SEÇÃO: LOJA CLIENTE -->
+        <section id="storeSection">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-brand-black to-neutral-800 text-white rounded-2xl p-6 sm:p-10 mb-8 shadow-xl flex flex-col md:flex-row justify-between items-center gap-6 border-l-8 border-brand-yellow">
+                <div class="space-y-3 max-w-xl">
+                    <span class="bg-brand-yellow text-brand-black font-extrabold text-xs px-3 py-1 rounded-full uppercase tracking-wider">Qualidade & Preço Justo</span>
+                    <h1 class="text-3xl sm:text-4xl font-black">Tudo para sua Obra ou Reforma no Rocha Depósito</h1>
+                    <p class="text-brand-gray text-sm sm:text-base">De materiais básicos a acabamentos elétricos e hidráulicos com as melhores condições.</p>
+                    <div class="flex gap-3 pt-2">
+                        <a href="#catalogo" class="bg-brand-yellow hover:bg-yellow-400 text-brand-black px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 shadow">
+                            Ver Catálogo <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="bg-neutral-900 p-4 rounded-xl border border-neutral-700 w-full md:w-80 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-brand-orange/20 text-brand-orange p-2.5 rounded-lg">
+                            <i data-lucide="truck" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm">Entrega Agilizada</h4>
+                            <p class="text-xs text-brand-gray">Direto no seu canteiro de obras</p>
+                        </div>
+                    </div>
+                    <hr class="border-neutral-800">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-brand-yellow/20 text-brand-yellow p-2.5 rounded-lg">
+                            <i data-lucide="shield-check" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm">Garantia Comprovada</h4>
+                            <p class="text-xs text-brand-gray">Marcas renomadas no mercado</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros e Grade de Produtos -->
+            <div id="catalogo" class="space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-300 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-black text-brand-black flex items-center gap-2">
+                            <i data-lucide="grid" class="w-6 h-6 text-brand-yellow"></i> Nossos Produtos
+                        </h2>
+                        <p class="text-xs text-brand-gray">Explore materiais de construção com pronta entrega</p>
+                    </div>
+
+                    <!-- Botões Filtro Rápido -->
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <button onclick="setCategory('all')" class="cat-btn px-3 py-1.5 rounded-lg font-semibold bg-brand-black text-white" data-cat="all">Todos</button>
+                        <button onclick="setCategory('Eletrica')" class="cat-btn px-3 py-1.5 rounded-lg font-semibold bg-white text-brand-black border border-gray-300 hover:bg-gray-100" data-cat="Eletrica">Elétrica</button>
+                        <button onclick="setCategory('Hidraulica')" class="cat-btn px-3 py-1.5 rounded-lg font-semibold bg-white text-brand-black border border-gray-300 hover:bg-gray-100" data-cat="Hidraulica">Hidráulica</button>
+                        <button onclick="setCategory('Iluminacao')" class="cat-btn px-3 py-1.5 rounded-lg font-semibold bg-white text-brand-black border border-gray-300 hover:bg-gray-100" data-cat="Iluminacao">Iluminação</button>
+                        <button onclick="setCategory('Ferramentas')" class="cat-btn px-3 py-1.5 rounded-lg font-semibold bg-white text-brand-black border border-gray-300 hover:bg-gray-100" data-cat="Ferramentas">Ferramentas</button>
+                    </div>
+                </div>
+
+                <!-- Grid Produtos -->
+                <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- Produtos inseridos dinamicamente via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO: PAINEL DO VENDEDOR (RESTRITO) -->
+        <section id="sellerSection" class="hidden space-y-6">
+            <div class="bg-brand-black text-white p-6 rounded-2xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-green-500/20 text-green-400 text-xs px-2.5 py-1 rounded-full font-bold flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> Autenticado
+                        </span>
+                        <span id="loggedUserBadge" class="text-xs text-gray-400 font-medium">Vendedor</span>
+                    </div>
+                    <h2 class="text-2xl font-bold mt-1">Painel do Vendedor & Cobranças</h2>
+                    <p class="text-xs text-brand-gray">Gere orçamentos e links de pagamento para seus clientes.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="showSection('store')" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
+                        <i data-lucide="store" class="w-4 h-4"></i> Voltar à Loja
+                    </button>
+                    <button onclick="logout()" class="bg-red-600/80 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
+                        <i data-lucide="log-out" class="w-4 h-4"></i> Sair
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Métricas Rápidas -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
+                    <div class="text-brand-gray text-xs font-medium">Total de Cobranças</div>
+                    <div id="statTotalCount" class="text-2xl font-black text-brand-black mt-1">0</div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
+                    <div class="text-brand-gray text-xs font-medium">Valor Gerado Hoje</div>
+                    <div id="statTotalValue" class="text-2xl font-black text-brand-orange mt-1">R$ 0,00</div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
+                    <div class="text-brand-gray text-xs font-medium">Cobranças Pendentes</div>
+                    <div id="statPending" class="text-2xl font-black text-brand-yellow mt-1">0</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Formulário de Criação de Cobrança -->
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 lg:col-span-1 space-y-4">
+                    <h3 class="text-lg font-bold text-brand-black flex items-center gap-2 border-b pb-3">
+                        <i data-lucide="plus-circle" class="w-5 h-5 text-brand-orange"></i> Nova Cobrança
+                    </h3>
+                    
+                    <form id="chargeForm" onsubmit="handleCreateCharge(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-brand-gray mb-1">Nome do Cliente</label>
+                            <input type="text" id="clientName" required placeholder="Ex: João da Silva" 
+                                   class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-yellow focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-brand-gray mb-1">CPF / CNPJ do Cliente</label>
+                            <input type="text" id="clientDoc" required placeholder="000.000.000-00" 
+                                   class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-yellow focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-brand-gray mb-1">Descrição dos Produtos / Serviço</label>
+                            <textarea id="chargeDesc" required rows="3" placeholder="Ex: 5 Tomadas 20A + 2 Lâmpadas LED 12W + Frete local" 
+                                      class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-yellow focus:outline-none"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-brand-gray mb-1">Valor Total (R$)</label>
+                            <input type="number" id="chargeValue" step="0.01" min="1" required placeholder="0.00" 
+                                   class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm font-bold text-brand-black focus:ring-2 focus:ring-brand-yellow focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-brand-gray mb-1">Forma de Pagamento Preferencial</label>
+                            <select id="paymentMethod" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-yellow focus:outline-none">
+                                <option value="PIX">PIX (Aprovação Imediata)</option>
+                                <option value="Cartao">Cartão de Crédito em até 12x</option>
+                                <option value="Boleto">Boleto Bancário</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="w-full bg-brand-yellow hover:bg-yellow-400 text-brand-black font-bold py-3 rounded-lg shadow transition flex items-center justify-center gap-2">
+                            <i data-lucide="qr-code" class="w-5 h-5"></i> Gerar Cobrança
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Histórico e Cobranças Geradas -->
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 lg:col-span-2 space-y-4">
+                    <h3 class="text-lg font-bold text-brand-black flex items-center gap-2 border-b pb-3">
+                        <i data-lucide="receipt" class="w-5 h-5 text-brand-yellow"></i> Cobranças Recentes
+                    </h3>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-gray-100 text-brand-gray uppercase font-bold border-b">
+                                <tr>
+                                    <th class="p-3">Código</th>
+                                    <th class="p-3">Cliente</th>
+                                    <th class="p-3">Descrição</th>
+                                    <th class="p-3">Valor</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="chargesTable" class="divide-y divide-gray-200">
+                                <!-- Preenchido dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- RODAPÉ COMPLETO -->
+    <footer class="bg-brand-black text-white border-t-4 border-brand-yellow mt-12">
+        <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <!-- Coluna 1: Sobre -->
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <div class="bg-brand-yellow text-brand-black p-1.5 rounded font-black text-lg">ROCHA</div>
+                    <span class="font-bold tracking-wider text-sm">DEPÓSITO</span>
+                </div>
+                <p class="text-brand-gray text-xs leading-relaxed">
+                    Sua loja completa de materiais de construção, do básico ao acabamento. Qualidade, preço acessível e atendimento especializado.
+                </p>
+            </div>
+
+            <!-- Coluna 2: Categorias -->
+            <div class="space-y-2">
+                <h4 class="text-sm font-bold text-brand-yellow uppercase tracking-wider">Produtos</h4>
+                <ul class="text-xs text-gray-400 space-y-1.5">
+                    <li><a href="#catalogo" onclick="setCategory('Eletrica')" class="hover:text-white">Tomadas e Interruptores</a></li>
+                    <li><a href="#catalogo" onclick="setCategory('Iluminacao')" class="hover:text-white">Lâmpadas & Luminárias</a></li>
+                    <li><a href="#catalogo" onclick="setCategory('Hidraulica')" class="hover:text-white">Torneiras & Conexões</a></li>
+                    <li><a href="#catalogo" onclick="setCategory('Basico')" class="hover:text-white">Tintas e Argamassas</a></li>
+                </ul>
+            </div>
+
+            <!-- Coluna 3: Atendimento -->
+            <div class="space-y-2">
+                <h4 class="text-sm font-bold text-brand-yellow uppercase tracking-wider">Contato & Suporte</h4>
+                <div class="text-xs text-gray-400 space-y-2">
+                    <p class="flex items-center gap-2">
+                        <i data-lucide="mail" class="w-4 h-4 text-brand-orange"></i>
+                        <span>Rocharedeconstrucao@gmail.com</span>
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <i data-lucide="phone" class="w-4 h-4 text-brand-orange"></i>
+                        <span>(11) 99999-8888 / Atendimento WhatsApp</span>
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-brand-orange"></i>
+                        <span>Atendimento em toda a região</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Coluna 4: Informações Legais -->
+            <div class="space-y-3 bg-neutral-900 p-4 rounded-xl border border-neutral-800">
+                <h4 class="text-xs font-bold text-gray-300 uppercase">Dados da Empresa</h4>
+                <div class="text-xs text-gray-400 space-y-1">
+                    <p class="font-bold text-white">Rocha Depósito de Materiais para Construção</p>
+                    <p><span class="text-brand-gray">CNPJ:</span> 69.089.668/0001-53</p>
+                    <p class="text-[10px] text-gray-500 mt-2">©️ 2026 Rocha Depósito. Todos os direitos reservados.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-neutral-950 py-3 text-center text-xs text-brand-gray border-t border-neutral-900">
+            Rocha Depósito - O parceiro ideal da sua obra!
+        </div>
+    </footer>
+
+    <!-- MODAL DE LOGIN (ADMIN / VENDEDORES) -->
+    <div id="loginModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border-t-4 border-brand-yellow">
+            <button onclick="closeLoginModal()" class="absolute right-4 top-4 text-gray-400 hover:text-brand-black">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <div class="text-center mb-6">
+                <div class="bg-brand-black text-brand-yellow w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <i data-lucide="lock" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-brand-black">Acesso de Vendedores</h3>
+                <p class="text-xs text-brand-gray">Entre com suas credenciais para acessar o painel de cobranças</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-brand-gray mb-1">Usuário / Email</label>
+                    <input type="text" id="loginUser" required placeholder="vendedor@rocha.com"
+                           class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-yellow focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-brand-gray mb-1">Senha</label>
+                    <input type="password" id="loginPass" required placeholder="••••••••"
+                           class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-yellow focus:outline-none">
+                </div>
+                
+                <div id="loginError" class="text-red-600 text-xs hidden text-center font-semibold bg-red-50 p-2 rounded">
+                    Usuário ou senha incorretos! (Dica de teste: admin / admin)
+                </div>
+
+                <button type="submit" class="w-full bg-brand-black hover:bg-neutral-800 text-brand-yellow font-bold py-3 rounded-lg shadow transition">
+                    Entrar no Painel
+                </button>
+            </form>
+            <div class="mt-4 text-center">
+                <p class="text-[11px] text-gray-400">Credenciais de demonstração: <strong>admin</strong> / <strong>admin</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CARRINHO DE COMPRAS -->
+    <div id="cartModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex justify-end">
+        <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl">
+            <!-- Header Carrinho -->
+            <div class="bg-brand-black text-white p-4 flex justify-between items-center border-b border-gray-800">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="shopping-bag" class="w-5 h-5 text-brand-yellow"></i>
+                    <h3 class="font-bold text-lg">Seu Carrinho</h3>
+                </div>
+                <button onclick="toggleCartModal()" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Lista de Itens -->
+            <div id="cartItems" class="flex-grow overflow-y-auto p-4 space-y-3">
+                <!-- Itens via JS -->
+            </div>
+
+            <!-- Total e Checkout -->
+            <div class="p-4 border-t border-gray-200 bg-gray-50 space-y-3">
+                <div class="flex justify-between items-center text-sm font-semibold">
+                    <span class="text-brand-gray">Total do Pedido:</span>
+                    <span id="cartTotal" class="text-xl font-black text-brand-orange">R$ 0,00</span>
+                </div>
+
+                <button onclick="finishCustomerOrder()" class="w-full bg-brand-orange hover:bg-orange-600 text-white font-bold py-3 rounded-lg shadow transition flex items-center justify-center gap-2">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i> Finalizar Pedido via WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE EXIBIÇÃO DA COBRANÇA GERADA -->
+    <div id="chargeResultModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border-t-4 border-brand-orange">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-lg text-brand-black flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-6 h-6 text-green-500"></i> Cobrança Criada!
+                </h3>
+                <button onclick="closeChargeResultModal()" class="text-gray-400 hover:text-black">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div id="chargeReceiptContent" class="bg-gray-50 p-4 rounded-xl space-y-2 text-xs border text-gray-700">
+                <!-- Preenchido via JS -->
+            </div>
+
+            <div class="space-y-2">
+                <button onclick="copyChargeLink()" class="w-full bg-brand-black text-brand-yellow font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 text-xs hover:bg-neutral-800">
+                    <i data-lucide="copy" class="w-4 h-4"></i> Copiar Copia e Cola / Link
+                </button>
+                <button onclick="closeChargeResultModal()" class="w-full border border-gray-300 text-brand-gray font-semibold py-2 rounded-lg text-xs hover:bg-gray-100">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE FUNCIONAMENTO DA APLICAÇÃO -->
+    <script>
+        // BASE DE DADOS DE PRODUTOS SIMULADA
+        const products = [
+            {
+                id: 1,
+                name: "Tomada Dupla 10A com Espelho Linha Sleek",
+                category: "Eletrica",
+                price: 18.90,
+                tag: "Mais Vendido",
+                isOffer: false,
+                image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&auto=format&fit=crop&q=80"
+            },
+            {
+                id: 2,
+                name: "Lâmpada LED 12W 6500K Luz Branca",
+                category: "Iluminacao",
+                price: 9.90,
+                oldPrice: 14.90,
+                tag: "Promoção",
+                isOffer: true,
+                image: "https://images.unsplash.com/photo-1550985616-10810253b84d?w=400&auto=format&fit=crop&q=80"
+            },
+            {
+                id: 3,
+                name: "Torneira de Mesa para Cozinha Flexível Metal",
+                category: "Hidraulica",
+                price: 89.90,
+                tag: "Destaque",
+                isOffer: false,
+                image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400&auto=format&fit=crop&q=80"
+            },
+            {
+                id: 4,
+                name: "Interruptor Simples com Tomada 20A",
+                category: "Eletrica",
+                price: 15.50,
+                tag: "Elétrica",
+                isOffer: false,
+                image: "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?w=400&auto=format&fit=crop&q=80"
+            },
+            {
+                id: 5,
+                name: "Painel Plafon LED Quadrado 18W Sobrepor",
+                category: "Iluminacao",
+                price: 29.90,
+                oldPrice: 39.90,
+                tag: "Oferta",
+                isOffer: true,
+                image: "https://images.unsplash.com/photo-1524484485831-a92ffc0de03f?w=400&auto=format&fit=crop&q=80"
+            },
+            {
+                id: 6,
+                name: "Sifón Sanfonado Universal Branco",
+                category: "Hidraulica",
+                price: 12.00,
+                tag: "Hidráulica",
+                isOffer: false,
+                image: "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400&auto=format&fit=crop&q=80"
+            },
+            {
+                id: 7,
+                name: "Jogo de Chaves Fenda e Philips 6 Peças",
+                category: "Ferramentas",
+                price: 45.00,
+                tag: "Ferramentas",
+                isOffer: false,
+                image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=400&auto=format&fit=crop&q=80"
+            },
+            {
+                id: 8,
+                name: "Argamassa ACIII Cinza 20kg",
+                category: "Basico",
+                price: 34.90,
+                tag: "Básico",
+                isOffer: false,
+                image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&auto=format&fit=crop&q=80"
+            }
+        ];
+
+        // ESTADOS DA APLICAÇÃO
+        let cart = [];
+        let charges = [
+            {
+                id: "ROCHA-9821",
+                client: "Carlos Eduardo",
+                doc: "123.456.789-00",
+                desc: "10x Lâmpadas LED + 4 Tomadas",
+                value: 174.00,
+                method: "PIX",
+                status: "PAGO",
+                date: "03/11/2026"
+            }
+        ];
+        let isLoggedIn = false;
+        let selectedCategory = 'all';
+
+        // INICIALIZAÇÃO
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+            updateCartUI();
+            renderCharges();
+            lucide.createIcons();
+        });
+
+        // TROCA DE SEÇÃO (LOJA vs PAINEL)
+        function showSection(section) {
+            const store = document.getElementById('storeSection');
+            const seller = document.getElementById('sellerSection');
+
+            if (section === 'seller') {
+                if (!isLoggedIn) {
+                    openLoginModal();
+                    return;
+                }
+                store.classList.add('hidden');
+                seller.classList.remove('hidden');
+            } else {
+                store.classList.remove('hidden');
+                seller.classList.add('hidden');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // RENDERIZAÇÃO DE PRODUTOS
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+
+            const filtered = products.filter(p => {
+                const matchesCat = selectedCategory === 'all' || p.category === selectedCategory;
+                const matchesSearch = p.name.toLowerCase().includes(searchVal);
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-brand-gray space-y-2">
+                        <i data-lucide="package-search" class="w-12 h-12 mx-auto text-gray-400"></i>
+                        <p class="font-bold">Nenhum produto encontrado!</p>
+                        <p class="text-xs">Tente buscar por outro termo ou mude a categoria.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md product-card transition flex flex-col justify-between">
+                    <div>
+                        <div class="relative h-48 overflow-hidden bg-gray-100">
+                            <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover">
+                            ${p.isOffer ? `
+                                <span class="absolute top-2 left-2 bg-brand-orange text-white text-[10px] font-black px-2 py-1 rounded shadow uppercase">
+                                    ${p.tag}
+                                </span>
+                            ` : `
+                                <span class="absolute top-2 left-2 bg-brand-black text-brand-yellow text-[10px] font-bold px-2 py-1 rounded shadow">
+                                    ${p.tag}
+                                </span>
+                            `}
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <h3 class="font-bold text-sm text-brand-black leading-snug line-clamp-2">${p.name}</h3>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-lg font-black text-brand-black">R$ ${p.price.toFixed(2).replace('.', ',')}</span>
+                                ${p.oldPrice ? `<span class="text-xs text-brand-gray line-through">R$ ${p.oldPrice.toFixed(2).replace('.', ',')}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 pt-0">
+                        <button onclick="addToCart(${p.id})" class="w-full bg-brand-yellow hover:bg-yellow-400 text-brand-black font-bold py-2 rounded-lg text-xs flex items-center justify-center gap-2 shadow-sm transition">
+                            <i data-lucide="shopping-cart" class="w-4 h-4"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function setCategory(cat) {
+            selectedCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                if (btn.dataset.cat === cat) {
+                    btn.className = "cat-btn px-3 py-1.5 rounded-lg font-semibold bg-brand-black text-white";
+                } else {
+                    btn.className = "cat-btn px-3 py-1.5 rounded-lg font-semibold bg-white text-brand-black border border-gray-300 hover:bg-gray-100";
+                }
+            });
+            renderProducts();
+        }
+
+        function filterProducts() {
+            renderProducts();
+        }
+
+        // LÓGICA DO CARRINHO
+        function addToCart(productId) {
+            const prod = products.find(p => p.id === productId);
+            const item = cart.find(i => i.id === productId);
+
+            if (item) {
+                item.qty++;
+            } else {
+                cart.push({ ...prod, qty: 1 });
+            }
+
+            updateCartUI();
+            toggleCartModal(true);
+        }
+
+        function changeQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if (!item) return;
+
+            item.qty += delta;
+            if (item.qty <= 0) {
+                cart = cart.filter(i => i.id !== id);
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const countEl = document.getElementById('cartCount');
+            const totalEl = document.getElementById('cartTotal');
+            const itemsContainer = document.getElementById('cartItems');
+
+            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+            countEl.innerText = totalQty;
+            totalEl.innerText = `R$ ${totalPrice.toFixed(2).replace('.', ',')}`;
+
+            if (cart.length === 0) {
+                itemsContainer.innerHTML = `
+                    <div class="text-center py-12 text-brand-gray space-y-2">
+                        <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto text-gray-300"></i>
+                        <p class="font-medium text-sm">Seu carrinho está vazio.</p>
+                    </div>
+                `;
+            } else {
+                itemsContainer.innerHTML = cart.map(item => `
+                    <div class="flex items-center justify-between border-b pb-3 gap-2">
+                        <img src="${item.image}" class="w-12 h-12 object-cover rounded border">
+                        <div class="flex-1 text-xs">
+                            <h4 class="font-bold text-brand-black">${item.name}</h4>
+                            <span class="text-brand-orange font-semibold">R$ ${item.price.toFixed(2).replace('.', ',')}</span>
+                        </div>
+                        <div class="flex items-center border rounded">
+                            <button onclick="changeQty(${item.id}, -1)" class="px-2 py-1 text-gray-600 hover:bg-gray-100">-</button>
+                            <span class="px-2 font-bold text-xs">${item.qty}</span>
+                            <button onclick="changeQty(${item.id}, 1)" class="px-2 py-1 text-gray-600 hover:bg-gray-100">+</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            lucide.createIcons();
+        }
+
+        function toggleCartModal(forceOpen = false) {
+            const modal = document.getElementById('cartModal');
+            if (forceOpen) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.toggle('hidden');
+            }
+        }
+
+        function finishCustomerOrder() {
+            if (cart.length === 0) {
+                alert("Adicione produtos ao carrinho antes de finalizar!");
+                return;
+            }
+
+            let text = "*NOVO PEDIDO - ROCHA DEPÓSITO*\n\n";
+            cart.forEach(i => {
+                text += `• ${i.qty}x ${i.name} - R$ ${(i.price * i.qty).toFixed(2)}\n`;
+            });
+            const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            text += `\n*TOTAL: R$ ${total.toFixed(2)}*`;
+
+            const phone = "5511999998888"; // Telefone configurado
+            const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        // AUTENTICAÇÃO / LOGIN DA ÁREA DE VENDEDOR
+        function openLoginModal() {
+            if (isLoggedIn) {
+                showSection('seller');
+                return;
+            }
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUser').value;
+            const p = document.getElementById('loginPass').value;
+
+            // Simulação de login simples
+            if (u === 'admin' && p === 'admin') {
+                isLoggedIn = true;
+                document.getElementById('authBtnText').innerText = "Painel Vendedor";
+                document.getElementById('loggedUserBadge').innerText = "Vendedor: Admin Rocha";
+                closeLoginModal();
+                showSection('seller');
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            document.getElementById('authBtnText').innerText = "Área Vendedor";
+            showSection('store');
+        }
+
+        // SISTEMA DE COBRANÇAS / PAINEL DE VENDAS
+        function handleCreateCharge(e) {
+            e.preventDefault();
+            const name = document.getElementById('clientName').value;
+            const doc = document.getElementById('clientDoc').value;
+            const desc = document.getElementById('chargeDesc').value;
+            const value = parseFloat(document.getElementById('chargeValue').value);
+            const method = document.getElementById('paymentMethod').value;
+
+            const newCharge = {
+                id: `ROCHA-${Math.floor(1000 + Math.random() * 9000)}`,
+                client: name,
+                doc: doc,
+                desc: desc,
+                value: value,
+                method: method,
+                status: "PENDENTE",
+                date: new Date().toLocaleDateString('pt-BR')
+            };
+
+            charges.unshift(newCharge);
+            renderCharges();
+            showChargeResult(newCharge);
+
+            // Limpa o formulário
+            document.getElementById('chargeForm').reset();
+        }
+
+        function renderCharges() {
+            const table = document.getElementById('chargesTable');
+            const totalValEl = document.getElementById('statTotalValue');
+            const totalCountEl = document.getElementById('statTotalCount');
+            const pendingEl = document.getElementById('statPending');
+
+            const totalVal = charges.reduce((acc, c) => acc + c.value, 0);
+            const pendingCount = charges.filter(c => c.status === 'PENDENTE').length;
+
+            totalValEl.innerText = `R$ ${totalVal.toFixed(2).replace('.', ',')}`;
+            totalCountEl.innerText = charges.length;
+            pendingEl.innerText = pendingCount;
+
+            table.innerHTML = charges.map(c => `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-3 font-bold text-brand-black">${c.id}</td>
+                    <td class="p-3">${c.client}<br><span class="text-[10px] text-gray-400">${c.doc}</span></td>
+                    <td class="p-3 max-w-xs truncate">${c.desc}</td>
+                    <td class="p-3 font-bold text-brand-orange">R$ ${c.value.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.status === 'PAGO' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-800'}">
+                            ${c.status}
+                        </span>
+                    </td>
+                    <td class="p-3 text-center space-x-1">
+                        <button onclick="toggleChargeStatus('${c.id}')" class="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded" title="Alternar Status">
+                            <i data-lucide="refresh-cw" class="w-3 h-3 inline"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function toggleChargeStatus(id) {
+            const charge = charges.find(c => c.id === id);
+            if (charge) {
+                charge.status = charge.status === 'PENDENTE' ? 'PAGO' : 'PENDENTE';
+                renderCharges();
+            }
+        }
+
+        function showChargeResult(charge) {
+            const modal = document.getElementById('chargeResultModal');
+            const content = document.getElementById('chargeReceiptContent');
+
+            content.innerHTML = `
+                <p><strong>Código da Cobrança:</strong> ${charge.id}</p>
+                <p><strong>Cliente:</strong> ${charge.client} (${charge.doc})</p>
+                <p><strong>Valor:</strong> R$ ${charge.value.toFixed(2).replace('.', ',')}</p>
+                <p><strong>Forma de Pagamento:</strong> ${charge.method}</p>
+                <p><strong>Descrição:</strong> ${charge.desc}</p>
+                <hr class="my-2 border-gray-200">
+                <p class="text-[11px] text-gray-500 font-mono">Chave PIX de Teste (Copia e Cola):<br>00020126580014br.gov.bcb.pix0136rocha-deposito-cnpj-69089668000153</p>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeChargeResultModal() {
+            document.getElementById('chargeResultModal').classList.add('hidden');
+        }
+
+        function copyChargeLink() {
+            const textToCopy = "Cobrança Rocha Depósito: PIX Copia e Cola - 00020126580014br.gov.bcb.pix0136rocha-deposito-cnpj-69089668000153";
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = textToCopy;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+            
+            alert("Link / Chave de cobrança copiada para a área de transferência!");
+        }
+    </script>
+</body>
+</html>
